@@ -1,11 +1,13 @@
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
-    MONGODB_URL: str = "mongodb://localhost:27017"
-    DATABASE_NAME: str = "omnipresence_db"
-    SECRET_KEY: str = "dlzaqVCxWsBFsl2mPpOXC0s89MNDyBpBJC8xJzxOwZK"
-    ALGORITHM: str = "HS256"
+    MONGODB_URL: str = ""
+    DATABASE_NAME: str = ""
+    SECRET_KEY: str = ""
+    ALGORITHM: str = ""
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440
+    AZURE_STORAGE_CONNECTION_STRING: str = ""
+    AZURE_CONTAINER_NAME: str = ""
 
     class Config:
         env_file = ".env"
