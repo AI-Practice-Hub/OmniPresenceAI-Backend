@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime
 from fastapi import UploadFile
 from bson import ObjectId
-from app.services.azure_service import upload_file_to_blob
+from app.services.azure_service import upload_file_to_blob, generate_sas_url
 
 async def create_avatar(db, user: dict, name: str, file: UploadFile):
     user_id = str(user["id"])
@@ -32,6 +32,10 @@ async def create_avatar(db, user: dict, name: str, file: UploadFile):
     result = await db.avatars.insert_one(avatar_doc)
     avatar_doc["id"] = str(result.inserted_id)
     avatar_doc["user_id"] = str(avatar_doc["user_id"])
+    
+    # Generate SAS URL for the response so user can immediately view it
+    avatar_doc["image_url"] = generate_sas_url(avatar_doc["image_url"])
+    
     return avatar_doc
 
 async def get_user_avatars(db, user_id: str):
@@ -40,4 +44,6 @@ async def get_user_avatars(db, user_id: str):
     for av in avatars:
         av["id"] = str(av.pop("_id"))
         av["user_id"] = str(av["user_id"])
+        # Generate SAS URL for every fetched avatar
+        av["image_url"] = generate_sas_url(av["image_url"])
     return avatars

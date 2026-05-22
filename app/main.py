@@ -11,6 +11,15 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="OmniPresenceAI API", lifespan=lifespan)
 
+from fastapi.middleware.cors import CORSMiddleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # Add Routers
 app.include_router(auth.router, prefix="/api")
 app.include_router(avatars.router, prefix="/api")
