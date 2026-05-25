@@ -1,7 +1,8 @@
-from azure.storage.blob.aio import BlobServiceClient
+from azure.storage.blob.aio import BlobServiceClient, BlobClient
 from azure.storage.blob import generate_blob_sas, BlobSasPermissions
 from app.core.config import settings
 from datetime import datetime, timedelta
+from urllib.parse import urlparse
 
 async def upload_file_to_blob(file_stream: bytes, blob_path: str, content_type: str) -> str:
     blob_service_client = BlobServiceClient.from_connection_string(settings.AZURE_STORAGE_CONNECTION_STRING)
@@ -53,3 +54,18 @@ def generate_sas_url(blob_url: str) -> str:
     )
     
     return f"{blob_url}?{sas_token}"
+
+def _has_sas_token(blob_url: str) -> bool:
+    return "sig=" in urlparse(blob_url).query
+
+async def download_blob_to_bytes(blob_url: str) -> bytes:
+    conn_str = settings.AZURE_STORAGE_CONNECTION_STRING
+    conn_dict = dict(item.split("=", 1) for item in conn_str.split(";") if "=" in item)
+    account_key = conn_dict.get("AccountKey")
+
+    credential = None if _has_sas_token(blob_url) else account_key
+    blob_client = BlobClient.from_blob_url(blob_url, credential=credential)
+
+    async with blob_client:
+        downloader = await blob_client.download_blob()
+        return await downloader.readall()
